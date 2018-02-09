@@ -11,28 +11,37 @@ class Vector {
     if (vector instanceof Vector) {
       return new Vector(vector.x + this.x, vector.y + this.y);
     }
+    // если if заканчивается на return, то else можно не писать
     else {
+      // лучше проверить аргументы в начале и выбросить ошибку, ытобы дальше шёл основной код
       throw Error('Можно прибавлять к вектору только вектор типа Vector');
     }
   }
 
+  // можно добавить значение по-умолчанию = 1
   times(number) {
     return new Vector(this.x * number, this.y * number);
   }
 }
 
 class Actor {
-
+  // можно добавить значения по-умолчанию для аргументов
   constructor(position, size, speed) {
+    // проверка (position) и остальные такие же лишние, т.к. undefined instanceof Vector === false
     if (((position) && (!(position instanceof Vector))) || ((size) && (!(size instanceof Vector))) || ((speed) && (!(speed instanceof Vector)))) {
       throw Error('В качестве аргумента передан не вектор типа Vector');
     }
+    // лишняя проверка
     if (position instanceof Vector) {
       this.pos = position;
     }
+    // лучше ука0зать значение по-умолчанию
     if (position === undefined) {
       this.pos = new Vector(0, 0);
     }
+
+    // ниже аналогично
+
     if (size instanceof Vector) {
       this.size = size;
     }
@@ -76,10 +85,12 @@ class Actor {
     if (actor === this) {
       return false;
     }
+    // else лишний, вторая часть проверки лишняя
     else if ((actor instanceof Actor) && (actor !== this)) {
       return ((this.left < actor.right) && (this.right > actor.left) && (this.top < actor.bottom) && (this.bottom > actor.top));
     }
     else {
+      // проверять переданные аргументы лучше в начале функции
       throw Error('Ошибка при передаче аргумента');
     }
   }
@@ -87,10 +98,14 @@ class Actor {
 
 class Level {
   constructor(playgroundGrid = [], actorArray = []) {
+    // лучше создать копии массивов, чтобы нельзя было изменить поля объекта извне
     this.grid = playgroundGrid;
     this.actors = actorArray;
     this.player = this.actors.find(el => el.type === 'player');
+    // лишняя проверка
     this.height = (this.grid === undefined) ? 0 : this.grid.length;
+    // лучше использоват стрелочную функцию
+    // вместо .apply можно использовать оператор "..." для передачи массива в качестве параметров
     this.width = this.height > 0 ? Math.max.apply(Math, this.grid.map(function (el) {
       return el.length;
     })) : 0;
@@ -99,6 +114,7 @@ class Level {
   }
 
   isFinished() {
+    // можно убрать if и написать просто return ...
     if ((this.status !== null) && (this.finishDelay < 0)) {
       return true;
     }
@@ -106,6 +122,7 @@ class Level {
   }
 
   actorAt(actor) {
+    // вторая часть проверки лишняя, да и первую я бы тоже опутил
     if (!(actor instanceof Actor) || (!actor)) {
       throw Error('Ошибка при передаче аргумента');
     }
@@ -133,6 +150,7 @@ class Level {
 
     for (let i = top; i < bottom; i++) {
       for (let k = left; k < right; k++) {
+        // this.grid[i][k] лучше сохранить в переменную
         if (this.grid[i][k]) {
           return this.grid[i][k];
         }
@@ -142,13 +160,16 @@ class Level {
   }
 
   removeActor(actor) {
+    // лучше использовать стрелочную функцию
     const index = this.actors.findIndex(function (el) {
       return el === actor;
     });
+    // а если не нашли?
     this.actors.splice(index, 1);
   }
 
   noMoreActors(type) {
+    // здесь пишется в одну строчку с помощью метода some
     const element = this.actors.find(function (el) {
       return el.type === type;
     });
@@ -180,6 +201,7 @@ class Level {
 
 class LevelParser {
   constructor(dictionary = {}) {
+    // лучше создать копию объекта
     this.dictionary = dictionary;
   }
 
@@ -195,6 +217,7 @@ class LevelParser {
       return 'lava';
     }
     else {
+      // лишний код
       return undefined;
     }
   }
@@ -202,6 +225,7 @@ class LevelParser {
 
   createGrid(plan) {
     let grid = [];
+    // можно написать проще с помощь map
     for (let i = 0; i < plan.length; i++) {
       let elem = plan[i];
       let gridLine = [];
@@ -216,6 +240,7 @@ class LevelParser {
 
   createActors(plan) {
     let objects = [];
+    // можно написать с помощью reduce
     for (let i = 0; i < plan.length; i++) {
       let elem = plan[i];
       for (let k = 0; k < elem.length; k++) {
@@ -240,6 +265,7 @@ class LevelParser {
 class Fireball extends Actor {
   constructor(position = new Vector(0, 0), speed = new Vector(0, 0)) {
     super(position);
+    // должно задаваться через конструктор базового класса
     this.speed = speed;
     this.size = new Vector(1, 1);
   }
@@ -249,6 +275,7 @@ class Fireball extends Actor {
   }
 
   getNextPosition(time = 1) {
+    // странный код, что будет если придёт 0?
     let Speed;
     if (time) {
       Speed = this.speed.times(time);
@@ -273,25 +300,34 @@ class Fireball extends Actor {
 }
 
 class HorizontalFireball extends Fireball {
+  // можно добавить значение аргумента по-умолчанию
   constructor(position) {
     super(position);
+    // должно задаваться через конструктор базового класса
     this.speed = new Vector(2, 0);
+    // должно задаваться через конструктор базового класса
     this.size = new Vector(1, 1);
   }
 }
 
 class VerticalFireball extends Fireball {
+  // можно добавить значение аргумента по-умолчанию
   constructor(position) {
     super(position);
+    // должно задаваться через конструктор базового класса
     this.speed = new Vector(0, 2);
+    // должно задаваться через конструктор базового класса
     this.size = new Vector(1, 1);
   }
 }
 
 class FireRain extends Fireball {
+  // можно добавить значение аргумента по-умолчанию
   constructor(position) {
     super(position);
+    // должно задаваться через конструктор базового класса
     this.speed = new Vector(0, 3);
+    // должно задаваться через конструктор базового класса
     this.size = new Vector(1, 1);
     this.initialpos = position;
   }
@@ -302,9 +338,12 @@ class FireRain extends Fireball {
 }
 
 class Coin extends Actor {
+  // можно добавить значение аргумента по-умолчанию
   constructor(position) {
     super(position);
+    // должно задаваться через конструктор базового класса
     this.size = new Vector(0.6, 0.6);
+    // должно задаваться через конструктор базового класса
     this.pos = this.pos.plus(new Vector(0.2, 0.1));
     this.initialpos = this.pos;
     this.springSpeed = 8;
@@ -335,10 +374,14 @@ class Coin extends Actor {
 }
 
 class Player extends Actor {
+  // можно добавить значение аргумента по-умолчаню
   constructor(position) {
     super(position);
+    // должно задаваться через конструктор базового класса
     this.pos = this.pos.plus(new Vector(0, -0.5));
+    // должно задаваться через конструктор базового класса
     this.size = new Vector(0.8, 1.5);
+    // должно задаваться через конструктор базового класса
     this.speed = new Vector(0, 0);
   }
 
@@ -353,8 +396,8 @@ const schemas = loadLevels();
 const actorDict = {
   '@': Player,
   '=': HorizontalFireball,
-  'x': 'wall',
-  '!': 'lava',
+  'x': 'wall',  // этого не должно быть
+  '!': 'lava',  // тут
   'o': Coin,
   '|': VerticalFireball,
   'v': FireRain
